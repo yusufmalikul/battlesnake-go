@@ -25,10 +25,10 @@ func info() BattlesnakeInfoResponse {
 
 	return BattlesnakeInfoResponse{
 		APIVersion: "1",
-		Author:     "",        // TODO: Your Battlesnake username
-		Color:      "#888888", // TODO: Choose color
-		Head:       "default", // TODO: Choose head
-		Tail:       "default", // TODO: Choose tail
+		Author:     "yusufmalikul", // Your Battlesnake username
+		Color:      "#0040ff",      // Choose color
+		Head:       "earmuffs",     // Choose head
+		Tail:       "bolt",         // Choose tail
 	}
 }
 
@@ -71,23 +71,69 @@ func move(state GameState) BattlesnakeMoveResponse {
 		isMoveSafe["up"] = false
 	}
 
-	// TODO: Step 1 - Prevent your Battlesnake from moving out of bounds
-	// boardWidth := state.Board.Width
-	// boardHeight := state.Board.Height
+	// Step 1 - Prevent your Battlesnake from moving out of bounds
+	boardWidth := state.Board.Width - 1
+	boardHeight := state.Board.Height - 1
 
-	// TODO: Step 2 - Prevent your Battlesnake from colliding with itself
-	// mybody := state.You.Body
+	if isMoveSafe["up"] && myHead.Y == boardHeight {
+		isMoveSafe["up"] = false
+	}
 
-	// TODO: Step 3 - Prevent your Battlesnake from colliding with other Battlesnakes
-	// opponents := state.Board.Snakes
+	if isMoveSafe["down"] && myHead.Y == 0 {
+		isMoveSafe["down"] = false
+	}
 
-	// Are there any safe moves left?
+	if isMoveSafe["right"] && myHead.X == boardWidth {
+		isMoveSafe["right"] = false
+	}
+
+	if isMoveSafe["left"] && myHead.X == 0 {
+		isMoveSafe["left"] = false
+	}
+
+	log.Println("myHead.Y", myHead.Y, "boardHeight", boardHeight)
+	log.Println("myHead.X", myHead.X, "boardWidth", boardWidth)
+
+	// Step 2 - Prevent your Battlesnake from colliding with itself
 	safeMoves := []string{}
 	for move, isSafe := range isMoveSafe {
 		if isSafe {
 			safeMoves = append(safeMoves, move)
 		}
 	}
+	log.Println("start debug body")
+	mybody := state.You.Body
+	for _, v := range mybody {
+		log.Println("body X:", v.X, "body Y:", v.Y)
+		if isMoveSafe["up"] && myHead.Y+1 == v.Y && myHead.X == v.X {
+			isMoveSafe["up"] = false
+		}
+
+		if isMoveSafe["down"] && myHead.Y-1 == v.Y && myHead.X == v.X {
+			isMoveSafe["down"] = false
+		}
+
+		if isMoveSafe["right"] && myHead.X+1 == v.X && myHead.Y == v.Y {
+			isMoveSafe["right"] = false
+		}
+
+		if isMoveSafe["left"] && myHead.X-1 == v.X && myHead.Y == v.Y {
+			isMoveSafe["left"] = false
+		}
+	}
+	log.Println("end debug body")
+
+	// TODO: Step 3 - Prevent your Battlesnake from colliding with other Battlesnakes
+	// opponents := state.Board.Snakes
+
+	// Are there any safe moves left?
+	safeMoves = []string{}
+	for move, isSafe := range isMoveSafe {
+		if isSafe {
+			safeMoves = append(safeMoves, move)
+		}
+	}
+	log.Println("safeMoves:", safeMoves)
 
 	if len(safeMoves) == 0 {
 		log.Printf("MOVE %d: No safe moves detected! Moving down\n", state.Turn)
